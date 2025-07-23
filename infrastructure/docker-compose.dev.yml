@@ -1,0 +1,216 @@
+version: '3.8'
+
+services:
+  # Main Orchestration Service
+  orchestration:
+    build:
+      context: ..
+      dockerfile: agentic-system/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DISCOVERY_INTERVAL=30
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/energy
+    volumes:
+      - ../logs:/app/logs
+      - ../data:/app/data
+      - ../tests:/app/tests
+    working_dir: /app
+    command: python start_agents.py orchestration
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Energy Agent
+  energy-agent:
+    build:
+      context: ..
+      dockerfile: agentic-system/Dockerfile
+    ports:
+      - "5052:5052"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/energy
+      - LOG_LEVEL=INFO
+      - DB_ENERGYAPP_USER=${DB_ENERGYAPP_USER:-energyapp}
+      - DB_ENERGYAPP_PASSWORD=${DB_ENERGYAPP_PASSWORD}
+    volumes:
+      - ../agents:/app/agents
+      - ../data:/app/data
+      - ../scripts:/app/scripts
+    working_dir: /app
+    command: python start_agents.py energy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5052/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Database Admin Agent
+  database-agent:
+    build:
+      context: ..
+      dockerfile: agentic-system/Dockerfile
+    ports:
+      - "5053:5053"
+    environment:
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/energy
+      - LOG_LEVEL=INFO
+      - DB_ADMIN=${DB_ADMIN:-admin}
+      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+    volumes:
+      - ../agents:/app/agents
+      - ../data:/app/data
+      - ../scripts:/app/scripts
+    working_dir: /app
+    command: python start_agents.py db_admin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5053/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Textract Agent (AWS)
+  textract-agent:
+    build:
+      context: ..
+      dockerfile: agentic-system/Dockerfile
+    ports:
+      - "5054:5054"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-west-2}
+      - LOG_LEVEL=INFO
+    volumes:
+      - ../agents:/app/agents
+      - ../data:/app/data
+      - ../tests/files:/app/tests/files
+    working_dir: /app
+    command: python start_agents.py textract
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5054/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Summarize Agent (Google Gemini)
+  summarize-agent:
+    build:
+      context: ..
+      dockerfile: agentic-system/Dockerfile
+    ports:
+      - "5055:5055"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - LOG_LEVEL=INFO
+    volumes:
+      - ../agents:/app/agents
+      - ../data:/app/data
+    working_dir: /app
+    command: python start_agents.py summarize
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5055/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Time Agent (MCP Time Server)
+  time-agent:
+    build:
+      context: ..
+      dockerfile: agentic-system/Dockerfile
+    ports:
+      - "5051:5051"
+    environment:
+      - LOCAL_TIMEZONE=${LOCAL_TIMEZONE:-America/Denver}
+      - LOG_LEVEL=INFO
+    volumes:
+      - ../agents:/app/agents
+    working_dir: /app
+    command: python start_agents.py time
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5051/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: energy
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../data/database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d energy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Optional: Monitoring stack
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data: 
