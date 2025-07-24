@@ -141,15 +141,15 @@ result = await process_user_request(
 ### 1. Environment Variables
 ```bash
 # Database Configuration
-DB_HOST=localhost
-DB_NAME=your_database
+DB_HOST_ENERGY=localhost
+DB_NAME_ENERGY=your_database
 DB_USER=your_user
 DB_PASSWORD=your_password
-DB_PORT=5432
+DB_PORT_ENERGY=5432
 
 # Admin Database (for setup)
-DB_ADMIN=postgres
-DB_ADMIN_PASSWORD=admin_password
+DB_ADMIN_ENERGY=postgres
+DB_ADMIN_ENERGY_PASSWORD=admin_password
 ```
 
 ### 2. Database Setup
@@ -179,7 +179,7 @@ python start_agents.py --all
 python tests/integration/test_database_orchestration.py
 
 # Test individual agents
-python tests/integration/test_db_admin_agent.py
+python tests/integration/test_DB_ADMIN_ENERGY_agent.py
 ```
 
 ### Example Usage

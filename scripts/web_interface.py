@@ -13,8 +13,8 @@ from flask import Flask, render_template, request, jsonify
 import threading
 import queue
 
-# Add src to path
-src_dir = str(Path(__file__).parent / "src")
+# Add src to path - now that we're in the scripts directory
+src_dir = str(Path(__file__).parent.parent / "src")
 sys.path.insert(0, src_dir)
 
 from redaptive.orchestration import OrchestrationEngine
@@ -75,6 +75,12 @@ async def process_user_request(user_request: str, **context):
         planner = DynamicPlanner()
         workflow_plan = await planner.create_workflow(user_request, agent_names)
         
+        # Add planning path information
+        planning_path = {
+            "intent": intent_result,
+            "workflow_plan": workflow_plan
+        }
+        
         # Step 3: Execute the workflow (handled by orchestration)
         workflow_result = await engine.execute_workflow(
             workflow_plan["workflow_id"], 
@@ -88,7 +94,10 @@ async def process_user_request(user_request: str, **context):
                 "user_goal": user_request,
                 "steps_executed": len(workflow_result["results"]),
                 "summary": f"Processed {intent_result['intent']} request: {user_request}",
-                "results": workflow_result["results"]
+                "results": workflow_result["results"],
+                "planning_path": planning_path,
+                "planning_method": workflow_plan.get("planning_method", "unknown"),
+                "planning_reason": workflow_plan.get("planning_reason", "No planning reason provided")
             }
         else:
             return {
@@ -178,6 +187,9 @@ def index():
                             <option value="Analyze energy consumption for building 456">Analyze energy consumption for building 456</option>
                             <option value="Show me energy usage patterns">Show me energy usage patterns</option>
                             <option value="Find energy optimization opportunities">Find energy optimization opportunities</option>
+                            <option value="What is the date of the most recent energy usage reading?">What is the date of the most recent energy usage reading?</option>
+                            <option value="Get the latest meter readings">Get the latest meter readings</option>
+                            <option value="Show me the most recent energy data">Show me the most recent energy data</option>
                         </optgroup>
                         <optgroup label="📊 Portfolio Management">
                             <option value="Show me portfolio performance metrics">Show me portfolio performance metrics</option>
@@ -247,6 +259,63 @@ def index():
                 } else {
                     html += '<p class="success">✅ Workflow: ' + data.workflow + '</p>';
                     html += '<p>📋 Steps executed: ' + data.steps_executed + '</p>';
+                    
+                    // Add planning method info
+                    if (data.planning_method) {
+                        const method = data.planning_method;
+                        const reason = data.planning_reason || 'No reason provided';
+                        
+                        let methodIcon = '❓';
+                        let methodText = method;
+                        
+                        if (method === 'learning_based') {
+                            methodIcon = '🧠';
+                            methodText = 'Learning-based (AI-powered)';
+                        } else if (method === 'rule_based') {
+                            methodIcon = '🔧';
+                            methodText = 'Rule-based (Systematic)';
+                        }
+                        
+                        html += '<p><strong>' + methodIcon + ' Planning Method:</strong> ' + methodText + '</p>';
+                        html += '<p><strong>💭 Planning Reason:</strong> ' + reason + '</p>';
+                    }
+                    
+                    // Add planning path details
+                    if (data.planning_path) {
+                        html += '<div class="log-section">';
+                        html += '<div class="log-header" onclick="toggleLog(this)">';
+                        html += '🧠 Planning Path Details';
+                        html += '</div>';
+                        html += '<div class="log-content">';
+                        
+                        const intent = data.planning_path.intent;
+                        const workflow = data.planning_path.workflow_plan;
+                        
+                        html += '<h5>🔍 Intent Matching:</h5>';
+                        html += '<ul>';
+                        html += '<li><strong>Intent:</strong> ' + (intent.intent || 'Unknown') + '</li>';
+                        html += '<li><strong>Confidence:</strong> ' + (intent.confidence || 0).toFixed(2) + '</li>';
+                        html += '<li><strong>Reason:</strong> ' + (intent.reason || 'No reason provided') + '</li>';
+                        html += '</ul>';
+                        
+                        html += '<h5>⚙️ Workflow Planning:</h5>';
+                        html += '<ul>';
+                        html += '<li><strong>Workflow ID:</strong> ' + (workflow.workflow_id || 'Unknown') + '</li>';
+                        html += '<li><strong>Steps Planned:</strong> ' + (workflow.steps ? workflow.steps.length : 0) + '</li>';
+                        html += '</ul>';
+                        
+                        if (workflow.steps) {
+                            html += '<h5>📋 Planned Steps:</h5>';
+                            html += '<ul>';
+                            workflow.steps.forEach((step, index) => {
+                                html += '<li><strong>Step ' + (index + 1) + ':</strong> ' + (step.agent || 'Unknown') + ' → ' + (step.tool || 'Unknown') + '</li>';
+                            });
+                            html += '</ul>';
+                        }
+                        
+                        html += '</div>';
+                        html += '</div>';
+                    }
                     
                     if (data.results) {
                         html += '<h4>🔄 Step-by-step execution:</h4>';

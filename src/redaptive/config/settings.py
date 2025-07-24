@@ -20,11 +20,11 @@ class DatabaseSettings:
     def from_env(cls) -> "DatabaseSettings":
         """Load database settings from environment variables."""
         return cls(
-            host=os.getenv("DB_HOST", "localhost"),
-            port=int(os.getenv("DB_PORT", "5432")),
-            name=os.getenv("DB_NAME", "energy_db"),
-            user=os.getenv("DB_ENERGYAPP_USER", "energy_user"),
-            password=os.getenv("DB_ENERGYAPP_PASSWORD", "")
+            host=os.getenv("DB_HOST_ENERGY", "localhost"),
+            port=int(os.getenv("DB_PORT_ENERGY", "5432")),
+            name=os.getenv("DB_NAME_ENERGY", "energy_db"),
+            user=os.getenv("DB_USER_ENERGY", "energy_user"),
+            password=os.getenv("DB_USERPASSWORD_ENERGY", "")
         )
 
 

@@ -23,7 +23,7 @@ python examples/database/database_orchestration_example.py
 ## Prerequisites
 
 1. Database must be running with energy data
-2. Database admin agent must be started: `python start_agents.py db_admin`
+2. Database admin agent must be started: `python start_agents.py DB_ADMIN_ENERGY`
 3. Environment variables configured in `.env`
 
 ## Expected Output

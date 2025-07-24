@@ -41,8 +41,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres:5432/energy
       - LOG_LEVEL=INFO
-      - DB_ENERGYAPP_USER=${DB_ENERGYAPP_USER:-energyapp}
-      - DB_ENERGYAPP_PASSWORD=${DB_ENERGYAPP_PASSWORD}
+      - DB_USER_ENERGY=${DB_USER_ENERGY:-energyapp}
+      - DB_USERPASSWORD_ENERGY=${DB_USERPASSWORD_ENERGY}
     volumes:
       - ../agents:/app/agents
       - ../data:/app/data
@@ -68,14 +68,14 @@ services:
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres:5432/energy
       - LOG_LEVEL=INFO
-      - DB_ADMIN=${DB_ADMIN:-admin}
-      - DB_ADMIN_PASSWORD=${DB_ADMIN_PASSWORD}
+      - DB_ADMIN_ENERGY=${DB_ADMIN_ENERGY:-admin}
+      - DB_ADMIN_ENERGY_PASSWORD=${DB_ADMIN_ENERGY_PASSWORD}
     volumes:
       - ../agents:/app/agents
       - ../data:/app/data
       - ../scripts:/app/scripts
     working_dir: /app
-    command: python start_agents.py db_admin
+    command: python start_agents.py DB_ADMIN_ENERGY
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5053/health"]
       interval: 30s

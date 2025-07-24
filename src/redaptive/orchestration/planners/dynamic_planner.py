@@ -37,10 +37,29 @@ class DynamicPlanner(BasePlanner):
                 ]
             }
         
-        # Handle time/date requests
-        if any(word in user_lower for word in ["date", "time", "current", "now", "today", "what time", "what date"]):
+        # Handle energy-specific date/time queries (like "what is the date of the most recent energy usage reading?")
+        if any(word in user_lower for word in ["energy", "consumption", "usage", "meter", "reading", "data"]) and any(word in user_lower for word in ["date", "time", "when", "latest", "recent", "most recent"]):
+            return {
+                "workflow_id": "energy_monitoring_date_workflow",
+                "planning_method": "rule_based",
+                "planning_reason": "Energy-specific date query detected via keyword matching",
+                "steps": [
+                    {
+                        "agent": "energy-monitoring",
+                        "tool": "get_latest_energy_reading",
+                        "parameters": {
+                            "include_details": True
+                        }
+                    }
+                ]
+            }
+        
+        # Handle general time/date requests (not energy-specific)
+        elif any(word in user_lower for word in ["date", "time", "current", "now", "today", "what time", "what date"]):
             return {
                 "workflow_id": "time_analysis_workflow",
+                "planning_method": "rule_based",
+                "planning_reason": "General time/date query detected via keyword matching",
                 "steps": [
                     {
                         "agent": "system", 
@@ -76,6 +95,8 @@ class DynamicPlanner(BasePlanner):
             
             return {
                 "workflow_id": "energy_analysis_workflow",
+                "planning_method": "rule_based",
+                "planning_reason": "Energy analysis query detected via keyword matching",
                 "steps": [
                     {
                         "agent": "energy-monitoring",
@@ -198,6 +219,8 @@ class DynamicPlanner(BasePlanner):
             
             return {
                 "workflow_id": "financial_analysis_workflow",
+                "planning_method": "rule_based",
+                "planning_reason": "Financial/ROI query detected via keyword matching",
                 "steps": [
                     {
                         "agent": "energy-finance",

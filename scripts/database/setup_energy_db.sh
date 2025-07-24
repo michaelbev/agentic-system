@@ -22,11 +22,11 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 DATA_DIR="$PROJECT_ROOT/data/database"
 
 # Database configuration
-DB_NAME="energy_db"
-DB_ADMIN_USER="postgres"
+DB_NAME_ENERGY="energy_db"
+DB_ADMIN_ENERGY_USER="postgres"
 DB_APP_USER="energy_user"
-DB_HOST="${DB_HOST:-localhost}"
-DB_PORT="${DB_PORT:-5432}"
+DB_HOST_ENERGY="${DB_HOST_ENERGY:-localhost}"
+DB_PORT_ENERGY="${DB_PORT_ENERGY:-5432}"
 
 # Function to check if PostgreSQL is running
 check_postgres() {
@@ -35,8 +35,8 @@ check_postgres() {
         exit 1
     fi
     
-    if ! pg_isready -h "$DB_HOST" -p "$DB_PORT" &> /dev/null; then
-        print_error "PostgreSQL server is not running on $DB_HOST:$DB_PORT"
+    if ! pg_isready -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" &> /dev/null; then
+        print_error "PostgreSQL server is not running on $DB_HOST_ENERGY:$DB_PORT_ENERGY"
         print_warning "Please start PostgreSQL server first"
         exit 1
     fi
@@ -49,19 +49,19 @@ setup_database() {
     print_status "Setting up energy database..."
     
     # Create database if it doesn't exist
-    if ! psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -lqt | cut -d \| -f 1 | grep -qw "$DB_NAME"; then
-        print_status "Creating database: $DB_NAME"
-        createdb -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" "$DB_NAME"
-        print_success "Database '$DB_NAME' created"
+    if ! psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -lqt | cut -d \| -f 1 | grep -qw "$DB_NAME_ENERGY"; then
+        print_status "Creating database: $DB_NAME_ENERGY"
+        createdb -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" "$DB_NAME_ENERGY"
+        print_success "Database '$DB_NAME_ENERGY' created"
     else
-        print_warning "Database '$DB_NAME' already exists"
+        print_warning "Database '$DB_NAME_ENERGY' already exists"
     fi
     
     # Create app user if it doesn't exist
-    if ! psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -t -c "SELECT 1 FROM pg_roles WHERE rolname='$DB_APP_USER'" | grep -q 1; then
+    if ! psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -t -c "SELECT 1 FROM pg_roles WHERE rolname='$DB_APP_USER'" | grep -q 1; then
         print_status "Creating application user: $DB_APP_USER"
-        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -c "CREATE USER $DB_APP_USER WITH PASSWORD 'energy123';"
-        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_APP_USER;"
+        psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -c "CREATE USER $DB_APP_USER WITH PASSWORD 'energy123';"
+        psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME_ENERGY TO $DB_APP_USER;"
         print_success "User '$DB_APP_USER' created with database privileges"
     else
         print_warning "User '$DB_APP_USER' already exists"
@@ -81,17 +81,17 @@ run_sql_scripts() {
     # Drop existing tables (optional)
     if [ -f "$DATA_DIR/schema/00_drop_tables.sql" ]; then
         print_status "Dropping existing tables..."
-        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -d "$DB_NAME" -f "$DATA_DIR/schema/00_drop_tables.sql"
+        psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -d "$DB_NAME_ENERGY" -f "$DATA_DIR/schema/00_drop_tables.sql"
     fi
     
     # Create schema
     if [ -f "$DATA_DIR/schema/03_redaptive_energy_schema_enhanced.sql" ]; then
         print_status "Creating enhanced energy schema..."
-        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -d "$DB_NAME" -f "$DATA_DIR/schema/03_redaptive_energy_schema_enhanced.sql"
+        psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -d "$DB_NAME_ENERGY" -f "$DATA_DIR/schema/03_redaptive_energy_schema_enhanced.sql"
         print_success "Enhanced energy schema created"
     elif [ -f "$DATA_DIR/schema/03_redaptive_energy_schema.sql" ]; then
         print_status "Creating energy schema..."
-        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -d "$DB_NAME" -f "$DATA_DIR/schema/03_redaptive_energy_schema.sql"
+        psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -d "$DB_NAME_ENERGY" -f "$DATA_DIR/schema/03_redaptive_energy_schema.sql"
         print_success "Energy schema created"
     else
         print_error "No energy schema file found"
@@ -102,7 +102,7 @@ run_sql_scripts() {
     for seed_file in "$DATA_DIR/seed"/04_redaptive_sample_data*.sql; do
         if [ -f "$seed_file" ]; then
             print_status "Loading sample data: $(basename "$seed_file")"
-            psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -d "$DB_NAME" -f "$seed_file"
+            psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -d "$DB_NAME_ENERGY" -f "$seed_file"
         fi
     done
     
@@ -114,7 +114,7 @@ set_permissions() {
     print_status "Setting database permissions..."
     
     # Grant permissions to app user
-    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_ADMIN_USER" -d "$DB_NAME" -c "
+    psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_ADMIN_ENERGY_USER" -d "$DB_NAME_ENERGY" -c "
         GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_APP_USER;
         GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_APP_USER;
         GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO $DB_APP_USER;
@@ -130,18 +130,18 @@ verify_setup() {
     print_status "Verifying database setup..."
     
     # Count tables
-    table_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';")
+    table_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_APP_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';")
     print_success "Found $table_count tables"
     
     # Count portfolios
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM portfolios;" &> /dev/null; then
-        portfolio_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM portfolios;")
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_APP_USER" -d "$DB_NAME_ENERGY" -c "SELECT COUNT(*) FROM portfolios;" &> /dev/null; then
+        portfolio_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_APP_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM portfolios;")
         print_success "Found $portfolio_count portfolios"
     fi
     
     # Count buildings
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM buildings;" &> /dev/null; then
-        building_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_APP_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM buildings;")
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_APP_USER" -d "$DB_NAME_ENERGY" -c "SELECT COUNT(*) FROM buildings;" &> /dev/null; then
+        building_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_APP_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM buildings;")
         print_success "Found $building_count buildings"
     fi
     
@@ -170,9 +170,9 @@ main() {
     verify_setup
     
     print_success "Energy database setup completed successfully!"
-    print_status "Database: $DB_NAME"
+    print_status "Database: $DB_NAME_ENERGY"
     print_status "User: $DB_APP_USER"
-    print_status "Connection: $DB_HOST:$DB_PORT"
+    print_status "Connection: $DB_HOST_ENERGY:$DB_PORT_ENERGY"
     
     print_status "To test the database, run:"
     print_status "  ./scripts/database/test_energy_db.sh"

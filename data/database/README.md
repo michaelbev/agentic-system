@@ -36,11 +36,11 @@ psql energy_db < seed/02_seed_data.sql
 Set these environment variables for the energy agents to connect:
 
 ```bash
-export DB_HOST=127.0.0.1
-export DB_PORT=5432
-export DB_NAME=energy_db
-export DB_ENERGYAPP_USER=energy_user
-export DB_ENERGYAPP_PASSWORD=your_password
+export DB_HOST_ENERGY=127.0.0.1
+export DB_PORT_ENERGY=5432
+export DB_NAME_ENERGY=energy_db
+export DB_USER_ENERGY=energy_user
+export DB_USERPASSWORD_ENERGY=your_password
 ```
 
 ## Test the Setup

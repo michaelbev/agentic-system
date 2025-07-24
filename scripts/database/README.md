@@ -71,20 +71,20 @@ Database management scripts for the Redaptive Energy Portfolio Management system
 
 ### **Default Settings**
 ```bash
-DB_NAME="energy_db"
+DB_NAME_ENERGY="energy_db"
 DB_USER="energy_user" 
 DB_PASSWORD="energy123"
-DB_HOST="localhost"
-DB_PORT="5432"
+DB_HOST_ENERGY="localhost"
+DB_PORT_ENERGY="5432"
 ```
 
 ### **Environment Variables**
 ```bash
 # Override defaults with environment variables
-export DB_HOST="your-db-host"
-export DB_PORT="5432"
-export DB_ENERGYAPP_USER="your-app-user"
-export DB_ENERGYAPP_PASSWORD="your-password"
+export DB_HOST_ENERGY="your-db-host"
+export DB_PORT_ENERGY="5432"
+export DB_USER_ENERGY="your-app-user"
+export DB_USERPASSWORD_ENERGY="your-password"
 ```
 
 ## 🔒 Security Notes

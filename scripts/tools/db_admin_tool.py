@@ -28,17 +28,17 @@ class DatabaseAdminAgent(BaseMCPServer):
         """Setup database connection"""
         try:
             # Get database connection parameters from environment
-            db_host = os.getenv('DB_HOST', 'localhost')
-            db_port = os.getenv('DB_PORT', '5432')
-            db_name = os.getenv('DB_NAME', 'energy_db')
-            db_user = os.getenv('DB_ENERGYAPP_USER', 'energy_user')
-            db_password = os.getenv('DB_ENERGYAPP_PASSWORD', '')
+            DB_HOST_ENERGY = os.getenv('DB_HOST_ENERGY', 'localhost')
+            DB_PORT_ENERGY = os.getenv('DB_PORT_ENERGY', '5432')
+            DB_NAME_ENERGY = os.getenv('DB_NAME_ENERGY', 'energy_db')
+            db_user = os.getenv('DB_USER_ENERGY', 'energy_user')
+            db_password = os.getenv('DB_USERPASSWORD_ENERGY', '')
             
             # Create connection
             self.connection = psycopg2.connect(
-                host=db_host,
-                port=db_port,
-                database=db_name,
+                host=DB_HOST_ENERGY,
+                port=DB_PORT_ENERGY,
+                database=DB_NAME_ENERGY,
                 user=db_user,
                 password=db_password
             )

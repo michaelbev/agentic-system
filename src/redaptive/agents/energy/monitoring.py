@@ -58,7 +58,28 @@ class EnergyMonitoringAgent(BaseMCPServer):
     def setup_tools(self):
         """Setup MCP tools for real-time energy monitoring"""
         
-        # Tool 1: Process Real-time Meter Data
+        # Tool 1: Get Latest Energy Usage Reading
+        self.register_tool(
+            "get_latest_energy_reading",
+            "Get the most recent energy usage reading from the database",
+            self.get_latest_energy_reading,
+            {
+                "type": "object",
+                "properties": {
+                    "meter_id": {
+                        "type": "string",
+                        "description": "Specific meter ID to query (optional, will get latest from all meters if not specified)"
+                    },
+                    "include_details": {
+                        "type": "boolean",
+                        "description": "Include detailed reading information",
+                        "default": True
+                    }
+                }
+            }
+        )
+        
+        # Tool 2: Process Real-time Meter Data
         self.register_tool(
             "process_meter_data",
             "Process real-time data from energy meters with anomaly detection",
@@ -100,7 +121,7 @@ class EnergyMonitoringAgent(BaseMCPServer):
             }
         )
 
-        # Tool 2: Detect Energy Anomalies
+        # Tool 3: Detect Energy Anomalies
         self.register_tool(
             "detect_anomalies",
             "Detect energy consumption and equipment anomalies",
@@ -137,7 +158,7 @@ class EnergyMonitoringAgent(BaseMCPServer):
             }
         )
 
-        # Tool 3: Generate Field Engineer Alerts
+        # Tool 4: Generate Field Engineer Alerts
         self.register_tool(
             "generate_field_alert",
             "Generate alerts for field engineers based on anomalies or equipment issues",
@@ -189,7 +210,7 @@ class EnergyMonitoringAgent(BaseMCPServer):
             }
         )
 
-        # Tool 4: Monitor Equipment Performance
+        # Tool 5: Monitor Equipment Performance
         self.register_tool(
             "monitor_equipment_performance",
             "Monitor and analyze equipment performance metrics",
@@ -225,7 +246,7 @@ class EnergyMonitoringAgent(BaseMCPServer):
             }
         )
 
-        # Tool 5: Analyze Energy Usage Patterns
+        # Tool 6: Analyze Energy Usage Patterns
         self.register_tool(
             "analyze_usage_patterns",
             "Analyze energy usage patterns for optimization opportunities",
@@ -270,7 +291,7 @@ class EnergyMonitoringAgent(BaseMCPServer):
             }
         )
 
-        # Tool 6: Real-time Demand Response
+        # Tool 7: Real-time Demand Response
         self.register_tool(
             "manage_demand_response",
             "Manage demand response events and load shedding",
@@ -315,9 +336,118 @@ class EnergyMonitoringAgent(BaseMCPServer):
             }
         )
 
+    async def get_latest_energy_reading(self, meter_id: Optional[str] = None, include_details: bool = True) -> Dict[str, Any]:
+        """Get the most recent energy usage reading from the database."""
+        try:
+            # Build the SQL query
+            if meter_id:
+                sql = """
+                    SELECT 
+                        eu.usage_id,
+                        eu.meter_id,
+                        eu.building_id,
+                        eu.reading_date,
+                        eu.energy_type,
+                        eu.energy_consumption,
+                        eu.energy_cost,
+                        eu.demand_kw,
+                        eu.power_factor,
+                        eu.weather_temp_f,
+                        eu.occupancy_percentage,
+                        em.meter_type,
+                        em.energy_type as meter_energy_type
+                    FROM energy_usage eu
+                    LEFT JOIN energy_meters em ON eu.meter_id = em.meter_id
+                    WHERE eu.meter_id = %s
+                    ORDER BY eu.reading_date DESC
+                    LIMIT 1
+                """
+                params = (meter_id,)
+            else:
+                sql = """
+                    SELECT 
+                        eu.usage_id,
+                        eu.meter_id,
+                        eu.building_id,
+                        eu.reading_date,
+                        eu.energy_type,
+                        eu.energy_consumption,
+                        eu.energy_cost,
+                        eu.demand_kw,
+                        eu.power_factor,
+                        eu.weather_temp_f,
+                        eu.occupancy_percentage,
+                        em.meter_type,
+                        em.energy_type as meter_energy_type
+                    FROM energy_usage eu
+                    LEFT JOIN energy_meters em ON eu.meter_id = em.meter_id
+                    ORDER BY eu.reading_date DESC
+                    LIMIT 1
+                """
+                params = ()
+
+            with db.get_cursor() as cursor:
+                cursor.execute(sql, params)
+                reading_data = cursor.fetchone()
+
+            if not reading_data:
+                return {
+                    "status": "no_data",
+                    "message": f"No energy readings found for meter {meter_id if meter_id else 'all meters'}"
+                }
+
+            # Convert reading_data to dict if it's not already
+            if hasattr(reading_data, '_asdict'):
+                reading_data = reading_data._asdict()
+
+            if include_details:
+                return {
+                    "status": "success",
+                    "usage_id": str(reading_data["usage_id"]),
+                    "meter_id": reading_data["meter_id"],
+                    "building_id": reading_data["building_id"],
+                    "timestamp": reading_data["reading_date"].isoformat() if reading_data["reading_date"] else None,
+                    "energy_type": reading_data["energy_type"],
+                    "energy_kwh": float(reading_data["energy_consumption"]) if reading_data["energy_consumption"] else None,
+                    "energy_cost": float(reading_data["energy_cost"]) if reading_data["energy_cost"] else None,
+                    "power_kw": float(reading_data["demand_kw"]) if reading_data["demand_kw"] else None,
+                    "power_factor": float(reading_data["power_factor"]) if reading_data["power_factor"] else None,
+                    "temperature_f": float(reading_data["weather_temp_f"]) if reading_data["weather_temp_f"] else None,
+                    "occupancy_percentage": float(reading_data["occupancy_percentage"]) if reading_data["occupancy_percentage"] else None,
+                    "meter_type": reading_data["meter_type"],
+                    "meter_energy_type": reading_data["meter_energy_type"]
+                }
+            else:
+                return {
+                    "status": "success",
+                    "meter_id": reading_data["meter_id"],
+                    "timestamp": reading_data["reading_date"].isoformat() if reading_data["reading_date"] else None,
+                    "energy_kwh": float(reading_data["energy_consumption"]) if reading_data["energy_consumption"] else None,
+                    "power_kw": float(reading_data["demand_kw"]) if reading_data["demand_kw"] else None
+                }
+        except Exception as e:
+            logger.error(f"Error getting latest energy reading: {e}")
+            return {
+                "status": "error",
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
+
     async def process_meter_data(self, meter_readings: List[Dict], enable_anomaly_detection: bool = True, alert_threshold: str = "medium") -> Dict[str, Any]:
         """Process real-time meter data with anomaly detection"""
         try:
+            # If no meter_readings provided, get the latest from database
+            if not meter_readings:
+                latest_reading_result = await self.get_latest_energy_reading()
+                if latest_reading_result.get("status") == "success":
+                    meter_readings = [latest_reading_result]
+                else:
+                    return {
+                        "status": "error",
+                        "error": "No meter readings provided and no data available in database",
+                        "timestamp": datetime.now().isoformat()
+                    }
+            
             processed_count = 0
             anomalies_detected = []
             alerts_generated = []

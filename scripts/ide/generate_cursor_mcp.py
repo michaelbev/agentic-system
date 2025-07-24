@@ -39,8 +39,8 @@ def generate_cursor_mcp_config():
                     "POSTGRES_DATABASE": os.getenv('POSTGRES_DATABASE', 'energy_db'),
                     "POSTGRES_USER": os.getenv('POSTGRES_USER', 'energy_user'),
                     "POSTGRES_PASSWORD": os.getenv('POSTGRES_PASSWORD', 'energy123'),
-                    "DB_ENERGYAPP_USER": os.getenv('DB_ENERGYAPP_USER', 'energy_user'),
-                    "DB_ENERGYAPP_PASSWORD": os.getenv('DB_ENERGYAPP_PASSWORD', 'energy123'),
+                    "DB_USER_ENERGY": os.getenv('DB_USER_ENERGY', 'energy_user'),
+                    "DB_USERPASSWORD_ENERGY": os.getenv('DB_USERPASSWORD_ENERGY', 'energy123'),
                     "GOOGLE_API_KEY": os.getenv('GOOGLE_API_KEY', ''),
                     "AWS_ACCESS_KEY_ID": os.getenv('AWS_ACCESS_KEY_ID', ''),
                     "AWS_SECRET_ACCESS_KEY": os.getenv('AWS_SECRET_ACCESS_KEY', ''),
@@ -56,8 +56,8 @@ def generate_cursor_mcp_config():
                     "POSTGRES_HOST": os.getenv('POSTGRES_HOST', 'localhost'),
                     "POSTGRES_PORT": os.getenv('POSTGRES_PORT', '5432'),
                     "POSTGRES_DATABASE": os.getenv('POSTGRES_DATABASE', 'energy_db'),
-                    "DB_ENERGYAPP_USER": os.getenv('DB_ENERGYAPP_USER', 'energy_user'),
-                    "DB_ENERGYAPP_PASSWORD": os.getenv('DB_ENERGYAPP_PASSWORD', 'energy123'),
+                    "DB_USER_ENERGY": os.getenv('DB_USER_ENERGY', 'energy_user'),
+                    "DB_USERPASSWORD_ENERGY": os.getenv('DB_USERPASSWORD_ENERGY', 'energy123'),
                     "PYTHONPATH": str(project_root)
                 }
             },
@@ -119,8 +119,8 @@ def validate_environment():
     required_vars = {
         'POSTGRES_HOST': 'Database host (default: localhost)',
         'POSTGRES_DATABASE': 'Database name (default: energy_db)',
-        'DB_ENERGYAPP_USER': 'Database user (default: energy_user)',
-        'DB_ENERGYAPP_PASSWORD': 'Database password'
+        'DB_USER_ENERGY': 'Database user (default: energy_user)',
+        'DB_USERPASSWORD_ENERGY': 'Database password'
     }
     
     optional_vars = {

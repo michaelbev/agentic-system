@@ -8,10 +8,10 @@ class KeywordMatcher(BaseMatcher):
     
     def __init__(self):
         self.keywords = {
-            "energy": ["energy", "consumption", "usage", "kwh", "meter", "electricity", "power", "demand"],
+            "energy": ["energy", "consumption", "usage", "kwh", "meter", "electricity", "power", "demand", "reading", "data", "monitor", "sensor"],
             "portfolio": ["portfolio", "buildings", "facilities", "properties", "sites", "locations", "performance", "metrics", "benchmark", "sustainability"],
             "finance": ["roi", "cost", "savings", "budget", "financial", "investment", "payback", "revenue"],
-            "monitoring": ["monitor", "alert", "anomaly", "real-time", "iot", "sensor", "data"],
+            "monitoring": ["monitor", "alert", "anomaly", "real-time", "iot", "sensor", "data", "reading", "latest", "recent"],
             "document": ["document", "pdf", "report", "summarize", "extract", "text", "file"],
             "time": ["date", "time", "current", "now", "today", "what time", "what date"]
         }
@@ -39,6 +39,15 @@ class KeywordMatcher(BaseMatcher):
                     "reason": f"Contains out-of-scope keyword: {keyword}",
                     "all_matches": {"out_of_scope": 1.0}
                 }
+        
+        # Special handling for energy-specific date queries
+        if any(word in user_lower for word in ["energy", "consumption", "usage", "meter", "reading", "data"]) and any(word in user_lower for word in ["date", "time", "when", "latest", "recent", "most recent"]):
+            return {
+                "intent": "energy_monitoring",
+                "confidence": 0.95,
+                "reason": "Energy-specific date/time query detected",
+                "all_matches": {"energy_monitoring": 0.95, "time": 0.3}
+            }
         
         # Then check for in-scope keywords
         matches = {}

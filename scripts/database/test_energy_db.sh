@@ -17,16 +17,16 @@ print_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
 print_error() { echo -e "${RED}❌ $1${NC}"; }
 
 # Database configuration
-DB_NAME="energy_db"
+DB_NAME_ENERGY="energy_db"
 DB_USER="energy_user"
-DB_HOST="${DB_HOST:-localhost}"
-DB_PORT="${DB_PORT:-5432}"
+DB_HOST_ENERGY="${DB_HOST_ENERGY:-localhost}"
+DB_PORT_ENERGY="${DB_PORT_ENERGY:-5432}"
 
 # Function to test database connection
 test_connection() {
     print_status "Testing energy database connection..."
     
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1;" &> /dev/null; then
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "SELECT 1;" &> /dev/null; then
         print_success "Database connection successful"
         return 0
     else
@@ -41,7 +41,7 @@ test_schema() {
     print_status "Checking database tables..."
     
     # Get table count
-    table_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | tr -d ' ')
+    table_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" 2>/dev/null | tr -d ' ')
     
     if [ "$table_count" -gt 0 ]; then
         print_success "Found $table_count tables"
@@ -53,7 +53,7 @@ test_schema() {
     # Check key tables exist
     key_tables=("portfolios" "buildings" "energy_meters" "energy_readings")
     for table in "${key_tables[@]}"; do
-        if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT 1 FROM $table LIMIT 1;" &> /dev/null; then
+        if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "SELECT 1 FROM $table LIMIT 1;" &> /dev/null; then
             print_success "Table '$table' exists and accessible"
         else
             print_warning "Table '$table' not found or not accessible"
@@ -66,20 +66,20 @@ test_data() {
     print_status "Checking energy data..."
     
     # Test portfolios
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM portfolios;" &> /dev/null; then
-        portfolio_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM portfolios;" | tr -d ' ')
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "SELECT COUNT(*) FROM portfolios;" &> /dev/null; then
+        portfolio_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM portfolios;" | tr -d ' ')
         print_success "Found $portfolio_count portfolios"
     fi
     
     # Test buildings
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM buildings;" &> /dev/null; then
-        building_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM buildings;" | tr -d ' ')
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "SELECT COUNT(*) FROM buildings;" &> /dev/null; then
+        building_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM buildings;" | tr -d ' ')
         print_success "Found $building_count buildings"
     fi
     
     # Test energy meters
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM energy_meters;" &> /dev/null; then
-        meter_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM energy_meters;" | tr -d ' ')
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "SELECT COUNT(*) FROM energy_meters;" &> /dev/null; then
+        meter_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM energy_meters;" | tr -d ' ')
         print_success "Found $meter_count energy meters"
     fi
 }
@@ -89,14 +89,14 @@ test_queries() {
     print_status "Testing facility search functionality..."
     
     # Test location-based search
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM buildings WHERE city = 'Dallas';" &> /dev/null; then
-        dallas_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM buildings WHERE city = 'Dallas';" | tr -d ' ')
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "SELECT COUNT(*) FROM buildings WHERE city = 'Dallas';" &> /dev/null; then
+        dallas_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM buildings WHERE city = 'Dallas';" | tr -d ' ')
         print_success "Found $dallas_count buildings in Dallas"
     fi
     
     # Test type-based search
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM buildings WHERE building_type = 'office';" &> /dev/null; then
-        office_count=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT COUNT(*) FROM buildings WHERE building_type = 'office';" | tr -d ' ')
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "SELECT COUNT(*) FROM buildings WHERE building_type = 'office';" &> /dev/null; then
+        office_count=$(psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -t -c "SELECT COUNT(*) FROM buildings WHERE building_type = 'office';" | tr -d ' ')
         print_success "Found $office_count office buildings"
     fi
 }
@@ -106,7 +106,7 @@ test_agent_queries() {
     print_status "Testing agent-specific queries..."
     
     # Test portfolio analysis query
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "
         SELECT p.name, COUNT(b.building_id) as building_count, 
                SUM(b.floor_area) as total_area
         FROM portfolios p 
@@ -120,7 +120,7 @@ test_agent_queries() {
     fi
     
     # Test energy data aggregation
-    if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+    if psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "
         SELECT DATE_TRUNC('month', reading_date) as month,
                SUM(energy_kwh) as total_kwh
         FROM energy_readings 
@@ -139,15 +139,15 @@ test_agent_queries() {
 show_summary() {
     print_status "Database Summary:"
     
-    echo "Database: $DB_NAME"
-    echo "Host: $DB_HOST:$DB_PORT"
+    echo "Database: $DB_NAME_ENERGY"
+    echo "Host: $DB_HOST_ENERGY:$DB_PORT_ENERGY"
     echo "User: $DB_USER"
     echo ""
     
     # Show table counts
     if test_connection; then
         echo "Table Summary:"
-        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "
+        psql -h "$DB_HOST_ENERGY" -p "$DB_PORT_ENERGY" -U "$DB_USER" -d "$DB_NAME_ENERGY" -c "
             SELECT schemaname, tablename, 
                    pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size
             FROM pg_tables 

@@ -1,252 +1,271 @@
 # Redaptive Agentic AI Platform
 
-A modern, production-ready multi-agent AI system for Energy-as-a-Service (EaaS) portfolio management and optimization.
+A production-ready Energy-as-a-Service (EaaS) platform with intelligent orchestration, multi-agent workflows, and comprehensive energy portfolio management capabilities.
 
-## 🚀 Overview
-
-The Redaptive Agentic Platform provides intelligent automation for Fortune 500 energy portfolios through specialized AI agents that handle real-time IoT monitoring, financial optimization, and portfolio intelligence.
-
-### Key Capabilities
-
-- **Real-time Energy Monitoring**: Process 12,000+ energy meters (48k+ data points/hour)
-- **Portfolio Intelligence**: Strategic analysis and optimization for large-scale energy portfolios  
-- **Financial Optimization**: EaaS revenue optimization and ROI analysis
-- **Document Processing**: Automated processing of energy reports and contracts
-- **Multi-Agent Orchestration**: Intelligent workflow coordination between agents
-
-## 🏗️ Architecture
-
-```
-src/redaptive/
-├── agents/           # AI agent implementations
-│   ├── base/         # Base MCP server framework
-│   ├── energy/       # Energy domain agents
-│   └── content/      # Content processing agents
-├── orchestration/    # Multi-agent coordination
-├── tools/           # Shared utilities
-├── config/          # Configuration management
-└── models/          # Data models and schemas
-```
-
-### Agent Overview
-
-| Agent | Purpose | Tools |
-|-------|---------|-------|
-| **Portfolio Intelligence** | Strategic energy analysis | 9 tools for portfolio optimization |
-| **Energy Monitoring** | Real-time IoT processing | 6 tools for meter data and alerts |
-| **Energy Finance** | EaaS revenue optimization | 6 tools for financial analysis |
-| **Document Processing** | PDF and report analysis | Document extraction and processing |
-| **Summarization** | Content summarization | Text analysis and synthesis |
-
-## 🚦 Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-
 - Python 3.8+
-- PostgreSQL 12+
-- Redis (optional, for IoT streaming)
+- Virtual environment
+- Required dependencies (see `requirements.txt`)
 
 ### Installation
-
 ```bash
 # Clone the repository
-git clone https://github.com/redaptive/agentic-platform.git
-cd agentic-platform
+git clone <repository-url>
+cd agentic-system
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -e .
+pip install -r requirements.txt
 
-# Setup database
-scripts/setup/setup_database.sh
-
-# Configure environment
+# Set up environment variables
 cp .env.example .env
-# Edit .env with your database credentials
-```
+# Edit .env with your configuration
 
-### Running Agents
-
-```bash
-# Start individual agents
-python -m redaptive portfolio-intelligence
-python -m redaptive energy-monitoring
-python -m redaptive energy-finance
-
-# Or use the orchestration engine
-python -m redaptive.orchestration
-```
-
-## 🔧 Configuration
-
-Configuration is managed through environment variables and the `src/redaptive/config/` module:
-
-```python
-from redaptive.config import settings
-
-# Database settings
-print(settings.database.host)
-print(settings.database.name)
-
-# Agent settings  
-print(settings.agents.max_concurrent_agents)
-print(settings.agents.default_timeout)
-```
-
-### Environment Variables
+### AI/ML Credentials (Optional)
+To enable learning-based planning and document processing, add these to your `.env` file:
 
 ```bash
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=energy_db
-DB_ENERGYAPP_USER=energy_user
-DB_ENERGYAPP_PASSWORD=your_password
+# AI/ML Provider Credentials
+OPENAI_API_KEY=your_openai_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+GOOGLE_API_KEY=your_google_api_key_here
 
-# Agents
-MAX_CONCURRENT_AGENTS=10
-AGENT_TIMEOUT=30
-LOG_LEVEL=INFO
-
-# Orchestration
-ENABLE_INTELLIGENT_ROUTING=true
-MAX_WORKFLOW_DEPTH=10
+# Preferred LLM Provider for Learning-based Planning
+# Options: "openai" or "anthropic"
+PREFERRED_LLM_PROVIDER=openai
 ```
 
-## 📊 Usage Examples
+**Note**: Without API keys, the system will use rule-based planning (keyword matching) instead of learning-based planning.
 
-### Portfolio Analysis
 
-```python
-from redaptive.agents.energy import PortfolioIntelligenceAgent
 
-agent = PortfolioIntelligenceAgent()
+### AWS Credentials (Optional)
+For PDF document processing with AWS Textract:
 
-# Analyze portfolio energy usage
-result = await agent.analyze_portfolio_energy_usage(
-    portfolio_id="portfolio_001",
-    date_range={
-        "start_date": "2024-01-01", 
-        "end_date": "2024-12-31"
-    }
-)
-
-print(f"Total consumption: {result['portfolio_metrics']['total_consumption']} kWh")
+```bash
+# AWS Credentials for Textract
+AWS_REGION=your_aws_region_here
+AWS_ACCESS_KEY_ID=your_aws_access_key_id_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key_here
+# AWS_SESSION_TOKEN=your_session_token  # Only needed if using temporary credentials
 ```
 
-### Real-time Monitoring
+### Credential Types and Purposes
 
-```python
-from redaptive.agents.energy import EnergyMonitoringAgent
+#### **AI/ML Provider Credentials**
+- **OPENAI_API_KEY**: Enables learning-based workflow planning using GPT models
+- **ANTHROPIC_API_KEY**: Enables learning-based workflow planning using Claude models
+- **GOOGLE_API_KEY**: Enables AI document summarization using Google Gemini
 
-monitor = EnergyMonitoringAgent()
+#### **AWS Credentials** 
+- **AWS_REGION**: AWS region for Textract services
+- **AWS_ACCESS_KEY_ID**: AWS access key for authentication
+- **AWS_SECRET_ACCESS_KEY**: AWS secret key for authentication
+- **Purpose**: PDF document processing and text extraction
 
-# Process meter data
-result = await monitor.process_meter_data(
-    meter_id="meter_12345",
-    readings=[
-        {"timestamp": "2024-01-01T12:00:00Z", "value": 150.5, "unit": "kWh"}
-    ]
-)
+
+
+### Verify Credentials
+Check your credential setup:
+```bash
+./activate_venv.sh python scripts/check_credentials.py
+```
 ```
 
-### Multi-Agent Workflow
+### Running the Platform
 
-```python
-from redaptive.orchestration import OrchestrationEngine
-
-engine = OrchestrationEngine()
-await engine.initialize_agents(["portfolio-intelligence", "energy-monitoring"])
-
-workflow = {
-    "steps": [
-        {
-            "agent": "portfolio-intelligence",
-            "tool": "analyze_portfolio_energy_usage",
-            "parameters": {"portfolio_id": "portfolio_001", "date_range": {...}}
-        },
-        {
-            "agent": "energy-monitoring", 
-            "tool": "detect_anomalies",
-            "parameters": {"meter_ids": ["meter_001", "meter_002"]}
-        }
-    ]
-}
-
-result = await engine.execute_workflow("workflow_001", workflow)
+#### Option 1: Terminal CLI
+```bash
+./activate_venv.sh python scripts/terminal_cli.py
 ```
 
-## 🧪 Testing
+#### Option 2: Web Interface (Recommended)
+```bash
+./activate_venv.sh python scripts/web_interface.py
+# Then open: http://localhost:8080
+```
 
+## 📁 Project Structure
+
+```
+agentic-system/
+├── src/                    # Main source code
+│   └── redaptive/         # Core platform modules
+│       ├── agents/         # AI agents (energy, content, system)
+│       ├── orchestration/  # Workflow orchestration engine
+│       ├── config/         # Configuration management
+│       ├── streaming/      # Real-time data streaming
+│       └── tools/          # Utility tools
+├── scripts/                # User-facing CLI tools
+│   ├── web_interface.py   # Web-based interface
+│   ├── terminal_cli.py    # Terminal-based CLI
+│   └── check_credentials.py # Credential validation tool
+├── tools/                  # Development tools and utilities
+│   ├── tests/             # Test scripts
+│   ├── debug/             # Debugging tools
+│   └── README.md          # Tools documentation
+├── examples/               # Usage examples
+│   ├── energy/            # Energy analysis examples
+│   ├── pdf/               # Document processing examples
+│   └── database/          # Database operation examples
+├── docs/                   # Documentation
+│   ├── architecture/      # Architecture documentation
+│   ├── agents/            # Agent documentation
+│   ├── api/               # API documentation
+│   └── deployment/        # Deployment guides
+├── tests/                  # Test suite
+│   ├── unit/              # Unit tests
+│   ├── integration/       # Integration tests
+│   ├── test_*.py         # Planning method tests
+│   └── debug_*.py        # Debug scripts
+├── data/                   # Data and database schemas
+├── infrastructure/         # Docker and deployment configs
+├── .env.example           # Environment configuration template
+└── requirements.txt        # Python dependencies
+```
+
+## 🎯 Core Features
+
+### 🤖 Intelligent Agents
+- **Portfolio Intelligence Agent** - Portfolio analysis and optimization
+- **Energy Monitoring Agent** - Real-time energy consumption monitoring
+- **Energy Finance Agent** - Financial analysis and ROI calculations
+- **Document Processing Agent** - PDF and document analysis
+- **Summarization Agent** - AI-powered text summarization
+- **System Agent** - System-level operations (time, scope checking)
+
+### 🔄 Orchestration Engine
+- **Intent Matching** - Natural language request understanding
+- **Workflow Planning** - Dynamic workflow creation with LLM and hardcoded fallback
+- **Multi-Agent Coordination** - Seamless agent collaboration
+- **Scope Detection** - Intelligent request filtering
+- **Planning Method Tracking** - Transparency into LLM vs hardcoded planning decisions
+
+### 📊 Energy-as-a-Service Capabilities
+- **Energy Consumption Analysis** - Building and portfolio-level insights
+- **Financial Optimization** - ROI calculations and contract optimization
+- **Portfolio Management** - Multi-site energy portfolio oversight
+- **Document Processing** - Utility bill and report analysis
+- **Real-time Monitoring** - IoT sensor data processing
+
+## 🎮 Usage Examples
+
+### Time and Date Requests
+```
+"What is the current time?"
+"Get the current date"
+```
+
+### Financial Analysis
+```
+"Calculate ROI for LED retrofit project for building 123"
+"Show me financial analysis for energy efficiency project"
+```
+
+### Energy Analysis
+```
+"Analyze energy consumption for building 456"
+"Find energy optimization opportunities"
+```
+
+### Portfolio Management
+```
+"Show me portfolio performance metrics"
+"Generate sustainability report"
+```
+
+### Document Processing
+```
+"Summarize this utility bill document"
+"Extract data from energy report"
+```
+
+## 🧠 Planning Method Tracking
+
+The system now provides transparency into which planning method was used for each request:
+
+### Learning-based Planning (AI-powered)
+```
+🧠 Planning Method: Learning-based (AI-powered)
+💭 Planning Reason: Learning-based planner used successfully
+```
+
+### Rule-based Planning (Systematic)
+```
+🔧 Planning Method: Rule-based (Systematic)
+💭 Planning Reason: Energy-specific date query detected via keyword matching
+```
+
+### Hybrid Planning (Best of Both)
+- **Primary**: Learning-based for intelligent, flexible planning
+- **Fallback**: Rule-based system for reliability
+- **Transparency**: See which method was used and why
+
+## 🔧 Development
+
+### Running Tests
 ```bash
 # Run all tests
-pytest
+./activate_venv.sh python -m pytest tests/
 
-# Run specific test categories
-pytest tests/unit/
-pytest tests/integration/
-pytest -m "not slow"  # Skip slow tests
+# Run planning method tests
+./activate_venv.sh python tests/test_planning_method.py
+./activate_venv.sh python tests/test_hybrid_planner.py
+./activate_venv.sh python tests/test_llm_planner.py
 
-# With coverage
-pytest --cov=redaptive --cov-report=html
+# Debug LLM functionality
+./activate_venv.sh python tests/debug_llm.py
 ```
 
-## 📈 Monitoring & Observability
-
-The platform includes built-in observability features:
-
-- **Health Checks**: Database and agent health monitoring
-- **Metrics**: Performance and usage metrics
-- **Logging**: Structured logging with correlation IDs
-- **Tracing**: Request tracing across agents (optional)
-
-## 🚀 Deployment
-
-### Docker
-
+### Development Tools
 ```bash
-# Build image
-docker build -t redaptive-platform .
-
-# Run with docker-compose
-docker-compose up -d
+# Run comprehensive demo
+./activate_venv.sh python tools/demo.py
 ```
-
-### Kubernetes
-
-```bash
-# Apply manifests
-kubectl apply -f deployment/kubernetes/
-```
-
-## 🔒 Security
-
-- Database connections use connection pooling and prepared statements
-- Agent communication follows MCP security guidelines
-- Environment-based configuration management
-- No hardcoded secrets or credentials
 
 ## 📚 Documentation
 
-- [Agent Development Guide](docs/agents/development.md)
-- [Orchestration Guide](docs/orchestration/guide.md)
-- [API Reference](docs/api/reference.md)
-- [Deployment Guide](docs/deployment/guide.md)
+- **[Architecture Guide](docs/architecture/ARCHITECTURE_EVOLUTION_PLAN.md)** - System architecture and evolution
+- **[Agent Documentation](docs/agents/)** - Detailed agent capabilities
+- **[API Documentation](docs/api/)** - API reference and examples
+- **[Deployment Guide](docs/deployment/)** - Production deployment instructions
+- **[Migration Guide](docs/MIGRATION_GUIDE.md)** - System migration procedures
+
+## 🛠️ Configuration
+
+### Environment Variables
+Copy `.env.example` to `.env` and configure:
+- Database connections
+- API keys (Google, AWS)
+- Logging levels
+- Agent configurations
+
+### Database Setup
+```bash
+# Set up energy portfolio database
+./scripts/database/setup_energy_db.sh
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests
-5. Run the test suite
-6. Submit a pull request
+4. Add tests for new functionality
+5. Submit a pull request
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+This project is proprietary to Redaptive. All rights reserved.
 
 ## 🆘 Support
 
-- [GitHub Issues](https://github.com/redaptive/agentic-platform/issues)
-- [Documentation](https://docs.redaptive.com/agentic-platform)
-- Email: ai-support@redaptive.com
+For support and questions:
+- Check the [documentation](docs/)
+- Review [examples](examples/)
+- Run [tests](tools/tests/) to verify functionality

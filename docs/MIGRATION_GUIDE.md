@@ -31,13 +31,13 @@ from redaptive.agents import AGENT_REGISTRY
 ### Old
 ```python
 # Manual environment variable handling
-db_host = os.getenv('DB_HOST', 'localhost')
+DB_HOST_ENERGY = os.getenv('DB_HOST_ENERGY', 'localhost')
 ```
 
 ### New
 ```python
 from redaptive.config import settings
-db_host = settings.database.host
+DB_HOST_ENERGY = settings.database.host
 ```
 
 ## Running Agents

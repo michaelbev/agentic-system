@@ -24,11 +24,11 @@ class TestConfiguration:
     def test_database_settings_from_env(self):
         """Test database settings load from environment variables."""
         with patch.dict(os.environ, {
-            'DB_HOST': 'test-host',
-            'DB_PORT': '5433',
-            'DB_NAME': 'test_db',
-            'DB_ENERGYAPP_USER': 'test_user',
-            'DB_ENERGYAPP_PASSWORD': 'test_pass'
+            'DB_HOST_ENERGY': 'test-host',
+            'DB_PORT_ENERGY': '5433',
+            'DB_NAME_ENERGY': 'test_db',
+            'DB_USER_ENERGY': 'test_user',
+            'DB_USERPASSWORD_ENERGY': 'test_pass'
         }):
             db_settings = DatabaseSettings.from_env()
             assert db_settings.host == 'test-host'

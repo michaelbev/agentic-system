@@ -251,7 +251,7 @@ python -m pytest tests/load/test_iot_processing.py -v
   - Migrate to shared connection pool
   - Implement connection validation before operations
   - Add graceful connection failure handling
-  - **Deliverable**: Updated `agents/db_admin_agent.py`
+  - **Deliverable**: Updated `agents/DB_ADMIN_ENERGY_agent.py`
 
 - [ ] **Add Connection Monitoring** (2 SP)
   - Implement connection pool metrics collection

@@ -63,10 +63,10 @@ AWS_DEFAULT_REGION=us-west-2
 GOOGLE_API_KEY=your_google_api_key
 
 # Database Configuration
-DB_ADMIN=admin
-DB_ADMIN_PASSWORD=your_admin_password
-DB_ENERGYAPP_USER=energyapp
-DB_ENERGYAPP_PASSWORD=your_app_password
+DB_ADMIN_ENERGY=admin
+DB_ADMIN_ENERGY_PASSWORD=your_admin_password
+DB_USER_ENERGY=energyapp
+DB_USERPASSWORD_ENERGY=your_app_password
 
 # Timezone
 LOCAL_TIMEZONE=America/Denver

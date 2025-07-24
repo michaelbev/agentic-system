@@ -865,7 +865,7 @@ resource "aws_db_instance" "redaptive_db" {
   storage_type           = "gp3"
   storage_encrypted      = true
   
-  db_name  = "redaptive"
+  DB_NAME_ENERGY  = "redaptive"
   username = "redaptive_user"
   password = var.db_password
   
