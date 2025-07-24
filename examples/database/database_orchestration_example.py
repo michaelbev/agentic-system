@@ -11,15 +11,72 @@ from pathlib import Path
 
 # Add the project root to the path
 project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "src"))
 
-from orchestration.intelligent.intelligent_orchestrator import IntelligentOrchestrator, process_user_request
+from redaptive.orchestration import OrchestrationEngine
+from redaptive.agents import AGENT_REGISTRY
+
+async def process_user_request(user_request: str, **context):
+    """
+    Process a user request using the orchestration engine.
+    This is a simplified version that demonstrates the concept.
+    """
+    try:
+        # Initialize the orchestration engine
+        engine = OrchestrationEngine()
+        
+        # Initialize database agents (using energy agents for demo)
+        agent_names = ["portfolio-intelligence", "energy-monitoring"]
+        success = await engine.initialize_agents(agent_names)
+        
+        if not success:
+            return {
+                "error": "Failed to initialize agents",
+                "workflow": "database_operations",
+                "user_goal": user_request,
+                "steps_executed": 0
+            }
+        
+        # For demo purposes, return a mock result
+        # In a real implementation, this would analyze the request and execute workflows
+        return {
+            "workflow": "database_operations",
+            "user_goal": user_request,
+            "steps_executed": 2,
+            "summary": f"Processed database request: {user_request}",
+            "results": {
+                "step_1": {
+                    "agent": "portfolio-intelligence",
+                    "tool": "search_facilities",
+                    "result": {
+                        "content": [{"text": "Found 5 buildings in Zurich with energy data"}],
+                        "isError": False
+                    }
+                },
+                "step_2": {
+                    "agent": "energy-monitoring",
+                    "tool": "analyze_usage_patterns",
+                    "result": {
+                        "content": [{"text": "Analyzed consumption patterns for last 6 months"}],
+                        "isError": False
+                    }
+                }
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "error": f"Failed to process request: {str(e)}",
+            "workflow": "database_operations",
+            "user_goal": user_request,
+            "steps_executed": 0
+        }
 
 async def main():
     """Run database operations orchestration example"""
     
     # Initialize the orchestrator
-    orchestrator = IntelligentOrchestrator()
+    engine = OrchestrationEngine()
     
     print("🚀 Database Operations Orchestration Example")
     print("=" * 50)

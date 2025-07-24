@@ -14,6 +14,7 @@ from .content import (
     DocumentProcessingAgent,
     SummarizeAgent
 )
+from .system_agent import SystemAgent
 
 # Agent registry for discovery and orchestration
 AGENT_REGISTRY = {
@@ -25,6 +26,9 @@ AGENT_REGISTRY = {
     # Content processing agents  
     'document-processing': DocumentProcessingAgent,
     'summarize': SummarizeAgent,
+    
+    # System agents
+    'system': SystemAgent,
 }
 
 __all__ = [
@@ -33,7 +37,8 @@ __all__ = [
     "EnergyMonitoringAgent", 
     "EnergyFinanceAgent",
     "DocumentProcessingAgent",
-    "SummarizeAgent"
+    "SummarizeAgent",
+    "SystemAgent"
 ]
 
 def get_agent(agent_name: str):
@@ -55,6 +60,11 @@ def get_agents_by_domain(domain: str):
         return {
             k: v for k, v in AGENT_REGISTRY.items()
             if k in ['document-processing', 'summarize']
+        }
+    elif domain == "system":
+        return {
+            k: v for k, v in AGENT_REGISTRY.items()
+            if k in ['system']
         }
     else:
         return {}

@@ -13,9 +13,16 @@ from typing import Dict, Any, Optional, List
 import sys
 from decimal import Decimal
 
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from psycopg2 import sql
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    from psycopg2 import sql
+    PSYCOPG2_AVAILABLE = True
+except ImportError:
+    psycopg2 = None
+    RealDictCursor = None
+    sql = None
+    PSYCOPG2_AVAILABLE = False
 
 from redaptive.agents.base import BaseMCPServer
 from redaptive.config.database import db
@@ -29,11 +36,17 @@ class PortfolioIntelligenceAgent(BaseMCPServer):
         
     def setup_database(self):
         """Setup database connection for energy portfolio data"""
+        if not PSYCOPG2_AVAILABLE:
+            logging.warning("psycopg2 not available - database functionality will be limited")
+            self.connection = None
+            return
+            
         try:
             self.connection = db.connect()
             logging.info("Energy portfolio database connection established successfully")
         except Exception as e:
             logging.error(f"Failed to connect to energy portfolio database: {e}")
+            self.connection = None
     
     def setup_tools(self):
         """Register energy portfolio analysis tools"""

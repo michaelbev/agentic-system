@@ -37,7 +37,7 @@ class SummarizeAgent(BaseMCPServer):
                 logging.warning("GOOGLE_API_KEY not found. Some features may not work.")
                 return
             
-            logging.info(f"Found API key: {api_key[:20]}...")
+            logging.info("Google API key found and configured")
             
             # Initialize the model
             genai.configure(api_key=api_key)

@@ -9,10 +9,12 @@ import json
 import sys
 from pathlib import Path
 
-# Add the orchestration directory to the path
-sys.path.append(str(Path(__file__).parent.parent / "orchestration"))
+# Add the src directory to the path
+src_dir = str(Path(__file__).parent.parent.parent / "src")
+if src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
 
-from intelligent_orchestrator import IntelligentOrchestrator, process_user_request
+from redaptive.orchestration import OrchestrationEngine
 
 async def test_pdf_summary_workflow():
     """Test the PDF extraction and summarization workflow"""
@@ -29,14 +31,14 @@ async def test_pdf_summary_workflow():
     
     print(f"📄 Processing PDF: {pdf_path}")
     
-    orchestrator = IntelligentOrchestrator()
+    orchestrator = OrchestrationEngine()
     
     try:
         # Test the PDF extraction and summarization workflow
         print("\n🔄 Starting PDF extraction and summarization...")
         
         # Use the intelligent workflow composition
-        result = await process_user_request(
+        result = await orchestrator.execute_workflow("test_workflow", {
             "summarize this PDF",
             file_path=pdf_path,
             max_length=200
@@ -102,7 +104,7 @@ async def test_simple_summary():
     print("\n🔧 Testing Simple Text Summarization")
     print("=" * 50)
     
-    orchestrator = IntelligentOrchestrator()
+    orchestrator = OrchestrationEngine()
     
     try:
         # Sample text about the PDF content
@@ -150,7 +152,7 @@ Consider these questions below as you evaluate whether the position and company 
         print("📝 Sample text to summarize:")
         print(sample_text.strip())
         
-        result = await process_user_request(
+        result = await orchestrator.execute_workflow("test_workflow", {
             "summarize this text",
             text=sample_text,
             max_length=100

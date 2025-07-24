@@ -27,6 +27,71 @@ sys.path.insert(0, str(project_root / "src"))
 from redaptive.orchestration import OrchestrationEngine
 from redaptive.agents import AGENT_REGISTRY
 
+async def process_user_request(user_request: str, **context):
+    """
+    Process a user request using the orchestration engine.
+    This is a simplified version that demonstrates the concept.
+    """
+    try:
+        # Initialize the orchestration engine
+        engine = OrchestrationEngine()
+        
+        # Initialize energy agents
+        agent_names = ["portfolio-intelligence", "energy-monitoring", "energy-finance"]
+        success = await engine.initialize_agents(agent_names)
+        
+        if not success:
+            return {
+                "error": "Failed to initialize agents",
+                "workflow": "energy_analysis",
+                "user_goal": user_request,
+                "steps_executed": 0
+            }
+        
+        # For demo purposes, return a mock result
+        # In a real implementation, this would analyze the request and execute workflows
+        return {
+            "workflow": "energy_analysis",
+            "user_goal": user_request,
+            "steps_executed": 2,
+            "summary": f"Processed energy request: {user_request}",
+            "results": {
+                "step_1": {
+                    "agent": "energy-monitoring",
+                    "tool": "analyze_consumption",
+                    "result": {
+                        "content": [{"text": json.dumps({
+                            "facility_id": context.get("facility_id", "unknown"),
+                            "total_consumption": 1500.5,
+                            "total_cost": 2250.75,
+                            "efficiency_rating": "B+"
+                        })}],
+                        "isError": False
+                    }
+                },
+                "step_2": {
+                    "agent": "portfolio-intelligence",
+                    "tool": "generate_insights",
+                    "result": {
+                        "content": [{"text": json.dumps({
+                            "recommendations": ["Upgrade HVAC system", "Install LED lighting"],
+                            "potential_savings": 450.25,
+                            "roi_percentage": 15.2
+                        })}],
+                        "isError": False
+                    }
+                }
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "error": f"Failed to process request: {str(e)}",
+            "workflow": "energy_analysis",
+            "user_goal": user_request,
+            "steps_executed": 0
+        }
+
 def explain_result(result, request, example_name):
     """
     Explain the orchestration result in a user-friendly way
@@ -61,7 +126,7 @@ def explain_result(result, request, example_name):
                             print(f"   ✅ {step_name}: Success")
                             # Show key data points
                             for key, value in step_data.items():
-                                if key in ['total_consumption', 'total_cost', 'facility_id', 'service_type']:
+                                if key in ['total_consumption', 'total_cost', 'facility_id', 'service_type', 'recommendations', 'potential_savings']:
                                     print(f"      • {key}: {value}")
                         else:
                             print(f"   ✅ {step_name}: {step_text[:100]}...")

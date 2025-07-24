@@ -26,7 +26,7 @@ class TestIntelligentOrchestrator:
     @pytest.fixture
     def orchestrator(self):
         """Create a test orchestrator instance"""
-        return IntelligentOrchestrator()
+        return OrchestrationEngine()
     
     @pytest.fixture
     def mock_agent_responses(self):
@@ -269,7 +269,7 @@ class TestProcessUserRequest:
     @pytest.mark.asyncio
     async def test_pdf_summarization_request(self):
         """Test processing a PDF summarization request"""
-        with patch('orchestration.intelligent.intelligent_orchestrator.IntelligentOrchestrator') as MockOrchestrator:
+        with patch('redaptive.orchestration.engine.OrchestrationEngine') as MockOrchestrator:
             mock_orchestrator = MockOrchestrator.return_value
             
             # Mock the execute_intelligent_workflow method
@@ -299,7 +299,7 @@ class TestProcessUserRequest:
     @pytest.mark.asyncio
     async def test_sentiment_analysis_request(self):
         """Test processing a sentiment analysis request"""
-        with patch('orchestration.intelligent.intelligent_orchestrator.IntelligentOrchestrator') as MockOrchestrator:
+        with patch('redaptive.orchestration.engine.OrchestrationEngine') as MockOrchestrator:
             mock_orchestrator = MockOrchestrator.return_value
             
             mock_orchestrator.execute_intelligent_workflow = AsyncMock(return_value={
@@ -324,7 +324,7 @@ class TestProcessUserRequest:
     @pytest.mark.asyncio
     async def test_energy_analysis_request(self):
         """Test processing an energy analysis request"""
-        with patch('orchestration.intelligent.intelligent_orchestrator.IntelligentOrchestrator') as MockOrchestrator:
+        with patch('redaptive.orchestration.engine.OrchestrationEngine') as MockOrchestrator:
             mock_orchestrator = MockOrchestrator.return_value
             
             mock_orchestrator.execute_intelligent_workflow = AsyncMock(return_value={
@@ -361,7 +361,7 @@ class TestWorkflowPatterns:
     
     def test_summarize_pdf_pattern(self):
         """Test the PDF summarization pattern"""
-        orchestrator = IntelligentOrchestrator()
+        orchestrator = OrchestrationEngine()
         pattern = orchestrator.workflow_patterns["summarize_pdf"]
         
         assert pattern["goal"] == "summarize PDF content"
@@ -377,7 +377,7 @@ class TestWorkflowPatterns:
     
     def test_analyze_document_pattern(self):
         """Test the document analysis pattern"""
-        orchestrator = IntelligentOrchestrator()
+        orchestrator = OrchestrationEngine()
         pattern = orchestrator.workflow_patterns["analyze_document"]
         
         assert pattern["goal"] == "analyze document content and sentiment"
@@ -393,7 +393,7 @@ class TestWorkflowPatterns:
     
     def test_energy_analysis_pattern(self):
         """Test the energy analysis pattern"""
-        orchestrator = IntelligentOrchestrator()
+        orchestrator = OrchestrationEngine()
         pattern = orchestrator.workflow_patterns["energy_data_analysis"]
         
         assert pattern["description"] == "Analyze energy data"
@@ -410,7 +410,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_no_workflow_found(self):
         """Test handling when no suitable workflow is found"""
-        with patch('orchestration.intelligent.intelligent_orchestrator.IntelligentOrchestrator') as MockOrchestrator:
+        with patch('redaptive.orchestration.engine.OrchestrationEngine') as MockOrchestrator:
             mock_orchestrator = MockOrchestrator.return_value
             
             # Mock no workflow found
@@ -426,7 +426,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_agent_failure(self):
         """Test handling when an agent fails"""
-        with patch('orchestration.intelligent.intelligent_orchestrator.IntelligentOrchestrator') as MockOrchestrator:
+        with patch('redaptive.orchestration.engine.OrchestrationEngine') as MockOrchestrator:
             mock_orchestrator = MockOrchestrator.return_value
             
             # Mock agent failure
@@ -449,7 +449,7 @@ class TestIntegrationExamples:
         # This test would run the actual examples if agents were available
         # For now, we'll test the pattern matching and workflow planning
         
-        orchestrator = IntelligentOrchestrator()
+        orchestrator = OrchestrationEngine()
         
         # Test various example requests
         example_requests = [

@@ -3,10 +3,17 @@ Database configuration and connection management.
 """
 
 import logging
-import psycopg2
-from psycopg2.extras import RealDictCursor
 from typing import Optional
 from contextlib import contextmanager
+
+try:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    PSYCOPG2_AVAILABLE = True
+except ImportError:
+    psycopg2 = None
+    RealDictCursor = None
+    PSYCOPG2_AVAILABLE = False
 
 from .settings import settings
 
@@ -15,15 +22,21 @@ class DatabaseConfig:
     """Database connection and configuration manager."""
     
     def __init__(self):
-        self.connection: Optional[psycopg2.extensions.connection] = None
+        self.connection = None
         self._setup_logging()
+        
+        if not PSYCOPG2_AVAILABLE:
+            self.logger.warning("psycopg2 not available - database functionality disabled")
     
     def _setup_logging(self):
         """Setup database-specific logging."""
         self.logger = logging.getLogger("redaptive.database")
     
-    def connect(self) -> psycopg2.extensions.connection:
+    def connect(self):
         """Establish database connection."""
+        if not PSYCOPG2_AVAILABLE:
+            raise RuntimeError("psycopg2 not available - install psycopg2-binary to enable database functionality")
+            
         if self.connection and not self.connection.closed:
             return self.connection
         
@@ -50,6 +63,9 @@ class DatabaseConfig:
     @contextmanager
     def get_cursor(self):
         """Get a database cursor with automatic cleanup."""
+        if not PSYCOPG2_AVAILABLE:
+            raise RuntimeError("psycopg2 not available - install psycopg2-binary to enable database functionality")
+            
         connection = self.connect()
         cursor = connection.cursor(cursor_factory=RealDictCursor)
         try:
@@ -64,6 +80,10 @@ class DatabaseConfig:
     
     def health_check(self) -> bool:
         """Check database connectivity."""
+        if not PSYCOPG2_AVAILABLE:
+            self.logger.warning("Database health check failed: psycopg2 not available")
+            return False
+            
         try:
             with self.get_cursor() as cursor:
                 cursor.execute("SELECT 1")
