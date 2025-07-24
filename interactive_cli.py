@@ -7,6 +7,7 @@ Send natural language prompts to the system and get responses
 import asyncio
 import sys
 import json
+import os
 from pathlib import Path
 
 # Add src to path
@@ -15,6 +16,30 @@ sys.path.insert(0, src_dir)
 
 from redaptive.orchestration import OrchestrationEngine
 from redaptive.agents import AGENT_REGISTRY
+
+# Global flag for verbose logging
+VERBOSE_LOGS = False
+
+def toggle_verbose_logs():
+    """Toggle verbose logging display"""
+    global VERBOSE_LOGS
+    VERBOSE_LOGS = not VERBOSE_LOGS
+    return VERBOSE_LOGS
+
+def print_log_header():
+    """Print a collapsible log header"""
+    if VERBOSE_LOGS:
+        print("🔧 Initializing agents and services...")
+        print("   (Type 'logs' to hide initialization details)")
+    else:
+        print("🔧 Initializing agents and services... (Type 'logs' to show details)")
+
+def print_log_footer():
+    """Print log footer"""
+    if VERBOSE_LOGS:
+        print("✅ All agents initialized successfully!")
+    else:
+        print("✅ Ready! All agents initialized.")
 
 async def process_user_request(user_request: str, **context):
     """
@@ -235,7 +260,7 @@ async def interactive_mode():
     print("🚀 Redaptive Agentic Platform - Interactive CLI")
     print("=" * 60)
     print("Send natural language prompts to the system")
-    print("Type 'quit' to exit, 'help' for commands")
+    print("Type 'quit' to exit, 'help' for commands, 'logs' to toggle verbose output")
     print("=" * 60)
     
     print(f"\n🤖 Available agents: {len(AGENT_REGISTRY)}")
@@ -248,6 +273,7 @@ async def interactive_mode():
     print("  • 'Show me portfolio performance metrics'")
     print("  • 'Summarize this utility bill document'")
     print("  • 'Find optimization opportunities in our facilities'")
+    print("  • 'What is the current time?'")
     
     while True:
         try:
@@ -261,6 +287,7 @@ async def interactive_mode():
                 print("\n📚 Available commands:")
                 print("  • Natural language requests (e.g., 'analyze energy usage')")
                 print("  • 'help' - Show this help")
+                print("  • 'logs' - Toggle verbose initialization logs")
                 print("  • 'quit' - Exit the program")
                 print("\n💡 Example requests:")
                 print("  • 'Analyze energy consumption for building 123'")
@@ -268,13 +295,21 @@ async def interactive_mode():
                 print("  • 'Show me portfolio performance metrics'")
                 print("  • 'Summarize this utility bill document'")
                 print("  • 'Find optimization opportunities in our facilities'")
+                print("  • 'What is the current time?'")
+                continue
+            elif user_input.lower() in ['logs', 'log', 'verbose']:
+                verbose = toggle_verbose_logs()
+                print(f"🔧 Verbose logs {'enabled' if verbose else 'disabled'}")
                 continue
             elif not user_input:
                 continue
             
             print(f"\n🔄 Processing: '{user_input}'")
+            print_log_header()
+            
             try:
                 result = await process_user_request(user_input)
+                print_log_footer()
                 print_result(result, user_input)
             except KeyboardInterrupt:
                 print("\n⏹️  Request cancelled by user")
