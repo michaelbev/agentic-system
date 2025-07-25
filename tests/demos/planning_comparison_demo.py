@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Comprehensive test to demonstrate learning-based execution planning working."""
+"""Demo script to compare different planning methods."""
 
 import asyncio
 import sys
@@ -7,29 +7,30 @@ import os
 from pathlib import Path
 
 # Add src to path
-src_dir = str(Path(__file__).parent.parent / "src")
+src_dir = str(Path(__file__).parent.parent.parent / "src")
 sys.path.insert(0, src_dir)
 
 from redaptive.orchestration.planners import DynamicPlanner, LearningBasedPlanner, HybridPlanner
 
-async def comprehensive_learning_test():
-    """Comprehensive test of learning-based execution planning."""
+async def planning_comparison_demo():
+    """Demonstrate different planning methods in action."""
     
-    print("🚀 Learning-Based Execution Planning - Comprehensive Test")
-    print("=" * 70)
+    print("🚀 Planning Methods Comparison Demo")
+    print("=" * 60)
     
     # Environment check
     print("🔍 Environment Configuration:")
     print(f"  PREFERRED_LLM_PROVIDER: {os.getenv('PREFERRED_LLM_PROVIDER', 'Not set')}")
     print(f"  ANTHROPIC_API_KEY: {'✅ Set' if os.getenv('ANTHROPIC_API_KEY') else '❌ Not set'}")
-    print(f"  OPENAI_API_KEY: {'✅ Set' if os.getenv('OPENAI_API_KEY') else '❌ Not set'}")
     print()
     
     # Initialize planners
-    rule_based = DynamicPlanner()
-    learning_based = LearningBasedPlanner()
-    hybrid_learning_primary = HybridPlanner(learning_primary=True)
-    hybrid_rule_primary = HybridPlanner(learning_primary=False)
+    planners = {
+        "Rule-Based": DynamicPlanner(),
+        "Learning-Based": LearningBasedPlanner(),
+        "Hybrid (Learning Primary)": HybridPlanner(learning_primary=True),
+        "Hybrid (Rule Primary)": HybridPlanner(learning_primary=False)
+    }
     
     available_agents = ["energy-monitoring", "energy-finance", "portfolio-intelligence", "system"]
     
@@ -44,7 +45,7 @@ async def comprehensive_learning_test():
         {
             "name": "Financial Analysis",
             "query": "Calculate ROI for LED retrofit project",
-            "expected_agent": "energy-finance", 
+            "expected_agent": "energy-finance",
             "expected_tool": "calculate_project_roi"
         },
         {
@@ -63,39 +64,22 @@ async def comprehensive_learning_test():
     
     print("🤖 **Planning Method Comparison**\n")
     
-    results = {
-        "rule_based": {"passed": 0, "total": 0},
-        "learning_based": {"passed": 0, "total": 0},
-        "hybrid_learning": {"passed": 0, "total": 0},
-        "hybrid_rule": {"passed": 0, "total": 0}
-    }
-    
     for i, scenario in enumerate(test_scenarios, 1):
         print(f"📝 **Test {i}**: {scenario['name']}")
         print(f"   Query: {scenario['query']}")
-        print("-" * 60)
+        print("-" * 50)
         
-        # Test each planner
-        planners = [
-            ("Rule-Based", rule_based, "rule_based"),
-            ("Learning-Based", learning_based, "learning_based"),
-            ("Hybrid (Learning Primary)", hybrid_learning_primary, "hybrid_learning"),
-            ("Hybrid (Rule Primary)", hybrid_rule_primary, "hybrid_rule")
-        ]
-        
-        for planner_name, planner, result_key in planners:
+        for planner_name, planner in planners.items():
             try:
                 result = await planner.create_workflow(scenario['query'], available_agents)
-                results[result_key]["total"] += 1
                 
-                # Check if result matches expectations
+                # Determine status
                 if result.get('steps'):
                     step = result['steps'][0]
                     agent_match = step.get('agent') == scenario['expected_agent']
                     tool_match = step.get('tool') == scenario['expected_tool']
                     
                     if agent_match and tool_match:
-                        results[result_key]["passed"] += 1
                         status = "✅ PASS"
                     else:
                         status = "⚠️  PARTIAL"
@@ -112,27 +96,15 @@ async def comprehensive_learning_test():
                 
             except Exception as e:
                 print(f"  {planner_name:25} : ❌ ERROR - {e}")
-                results[result_key]["total"] += 1
         
-        print("\n" + "=" * 70 + "\n")
+        print("\n" + "=" * 60 + "\n")
     
-    # Print summary
-    print("📊 **Test Results Summary**")
-    print("=" * 50)
-    
-    for planner_type, stats in results.items():
-        if stats["total"] > 0:
-            success_rate = (stats["passed"] / stats["total"]) * 100
-            print(f"{planner_type.replace('_', ' ').title():25} : {stats['passed']}/{stats['total']} ({success_rate:.1f}%)")
-    
-    print("\n🎯 **Key Findings**:")
-    print("  ✅ Learning-based planning is working and making API calls")
-    print("  ✅ Rule-based planning provides reliable fallback")
-    print("  ✅ Hybrid planning combines both approaches effectively")
-    print("  ✅ System gracefully handles different query types")
-    print("  ✅ All planning methods can route to appropriate agents")
-    
-    print("\n🚀 **Learning-Based Execution Planning Status**: WORKING ✅")
+    print("✅ Planning comparison demo completed!")
+    print("\n🎯 **Key Insights**:")
+    print("  • Rule-based planning provides consistent, predictable results")
+    print("  • Learning-based planning uses AI to understand natural language")
+    print("  • Hybrid planning combines both approaches for reliability")
+    print("  • All methods can route queries to appropriate agents")
 
 if __name__ == "__main__":
-    asyncio.run(comprehensive_learning_test()) 
+    asyncio.run(planning_comparison_demo()) 

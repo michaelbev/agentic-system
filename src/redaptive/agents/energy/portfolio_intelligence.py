@@ -847,7 +847,7 @@ class PortfolioIntelligenceAgent(BaseMCPServer):
     
     async def search_facilities(self, location: str, facility_type: str = None, 
                               min_capacity: float = None, max_capacity: float = None):
-        """Search for energy facilities by location and type"""
+        """Search for energy facilities by location, company name, or type"""
         if not self.connection:
             return {"error": "Database connection not established"}
         
@@ -869,10 +869,10 @@ class PortfolioIntelligenceAgent(BaseMCPServer):
                         p.company_name
                     FROM buildings b
                     JOIN portfolios p ON b.portfolio_id = p.portfolio_id
-                    WHERE LOWER(b.location) LIKE LOWER(%s)
+                    WHERE (LOWER(b.location) LIKE LOWER(%s) OR LOWER(p.company_name) LIKE LOWER(%s))
                     """
                 ]
-                params = [f"%{location}%"]
+                params = [f"%{location}%", f"%{location}%"]
                 
                 if facility_type:
                     query_parts.append("AND b.building_type = %s")

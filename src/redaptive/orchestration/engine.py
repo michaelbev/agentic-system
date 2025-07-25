@@ -394,3 +394,45 @@ class OrchestrationEngine:
                 "error": str(e),
                 "summary": "Workflow execution failed"
             }
+    
+    async def execute_adaptive_workflow(self, user_request: str, 
+                                      available_agents: List[str],
+                                      planning_method: Optional[str] = None) -> Dict[str, Any]:
+        """Execute an adaptive workflow using the specified planning method."""
+        try:
+            from .planners import AdaptivePlanner
+            
+            # Initialize adaptive planner
+            planner = AdaptivePlanner()
+            
+            # Create workflow using adaptive planning
+            workflow_definition = await planner.create_workflow(
+                user_request, 
+                available_agents,
+                planning_method=planning_method
+            )
+            
+            # Execute the workflow
+            workflow_result = await self.execute_workflow(
+                workflow_definition.get("workflow_id", "adaptive_workflow"),
+                workflow_definition
+            )
+            
+            # Add planning information to result
+            workflow_result.update({
+                "planning_method": workflow_definition.get("planning_method", "unknown"),
+                "planning_reason": workflow_definition.get("planning_reason", "No reason provided"),
+                "user_request": user_request
+            })
+            
+            return workflow_result
+            
+        except Exception as e:
+            logger.error(f"Adaptive workflow execution failed: {e}")
+            return {
+                "workflow_id": "adaptive_workflow",
+                "status": "failed",
+                "error": str(e),
+                "planning_method": planning_method or "unknown",
+                "user_request": user_request
+            }
